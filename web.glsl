@@ -43,7 +43,8 @@ float basis(vec2 v) {
   //vec2 z = pow(abs(v), vec2(2));
   //x = z.x+z.y;
   const float supp=.7;
-  return 1. - pow(smoothstep(-supp, supp, x),2.);
+  //return 1. - pow(smoothstep(-supp, supp, x),2.);
+  return 1. - pow(smoothstep(-supp, supp, x),1.2);
   //return smoothstep(.1, .5, 1/x*x);
   //return 1/(x*x);	
 }
@@ -69,7 +70,7 @@ vec2 shrow(vec2 sp){
 
 
 vec3 labyrinth(vec2 orig_uv) {
-  float scale = 7.;
+  float scale = 5.;
 
   vec2 uv = orig_uv * scale;
   vec2 cell = floor(uv);
@@ -87,7 +88,8 @@ vec3 labyrinth(vec2 orig_uv) {
     for(int y=-dy;y<=dy;++y){
       float fx=float(x);
       float fy=float(y);
-      tot-=eval(uv,shrow(cell+vec2(fx,fy)),w1); // wall corners
+      tot-= .4 * eval(uv,shrow(cell+vec2(fx,fy)),w1); // wall corners
+      //tot+= sampeval(uv,shrow(cell+vec2(fx,fy)),w1); // wall corners
       tot+=sampeval(uv,shrow(cell+vec2(-.5+fx,fy)),w1);// horiz
 
       tot+=sampeval(uv,cell+vec2( -.25+fx,.5+fy),w1); // vert
@@ -95,7 +97,8 @@ vec3 labyrinth(vec2 orig_uv) {
     }
   }
 
-  tot += .2*sin(u_time);
+  //tot += .2*sin(u_time);
+  //return vec3(-1,0,0);
   return tot;
 }
 
@@ -113,17 +116,15 @@ vec3 colorize(float value, vec3 col)
   return 1.0-(1.0-col)*value;
 }
 
-void main(void)
+vec3 color(vec2 st)
 {
-  vec2 st = gl_FragCoord.xy/u_resolution.xy;
-  st.x *= u_resolution.x/u_resolution.y;
-
-
   st.x += 0.05 * u_time;
 
-  st += 0.1*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
+  st += 0.06*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
 
-  float wall_value = labyrinth(st).r;
+  vec3 lab = labyrinth(st);
+  //return  (lab +vec3(1))/2.;
+  float wall_value = lab.r;
   float amplitude_r = 0.15+0.05*noise(vec2(-st.y*1.25+8.7, st.x*1.75-0.7));
   float amplitude_g = 0.2+0.05*noise(vec2(st.y*8.25+1.7*st.y, st.x*0.75-1.7*st.y));
   float amplitude_b = 0.25+0.05*noise(vec2(-st.x*2.76+1.75, st.x*1.75-0.7));
@@ -139,8 +140,15 @@ void main(void)
     )
   );
 
-  gl_FragColor = vec4(rgb,1.0);
+return rgb;
 }
 
 
 
+
+void main(void)
+{
+  vec2 st = gl_FragCoord.xy/u_resolution.xy;
+  st.x *= u_resolution.x/u_resolution.y;
+  gl_FragColor = vec4(color(st),1.0);
+}
