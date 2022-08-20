@@ -20,39 +20,28 @@ vec3 col(vec2 uv) {
 	vec2 cell = floor(scaled_uv);
 	
 	
-  // blalala
-	
-  /*
-	const float spoints[6] = {
+	const vec2 spoints[6] = vec2[6](
 		vec2(0,0),
 		vec2(0.5,0),
 		vec2(1,0),
 		vec2(1,.5),
 		vec2(1,1),
-	}
-		
-	float a = vec2(0,0));
-	float b = length(pos-vec2(0.5,0));
-	float c = length(pos-vec2(1,0));
-	float d = length(pos-vec2(1,0));
-	float e = length(pos-vec2(1,0));
-	float f = length(pos-vec2(1,0));
-	float a = length(pos-vec2(0,0));
-	float b = length(pos-vec2(0.5,0));
-	float c = length(pos-vec2(1,0));
-	float d = length(pos-vec2(1,0));
-	float e = length(pos-vec2(1,0));
-	float f = length(pos-vec2(1,0));
+		vec2(.5,.5)
+	);
+  const float x[6] = float[6]( 1,-1, 1, 1, 1, -1);
+
+  float total = 0;
+  //float dist[6];
+  for (int i = 0; i < 6; ++i) {
+    vec2 diff = (pos-spoints[i]);
+    float d = dot(diff, diff);
+    total += x[i] * d;
+  }
 	
-	*/
-	vec3 d = vec3(length(pos),
-		      length(pos-vec2(1,0)),
-		      length(pos-vec2(1,1)));
-	
-	vec3 x = vec3(1,1,0);
+	//vec3 x = vec3(1,1,0);
 	
 	
-	return d;
+	return vec3(.3*total);
 	//return vec3(fract(pos*5), 0);
 }
 
@@ -65,5 +54,4 @@ void main(void)
 	
 	vec3 rgb = col(uv);
 	out_color = vec4(rgb, 1);
-	out_color = vec4(0);
 }
