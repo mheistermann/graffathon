@@ -29,28 +29,47 @@ float noise(vec2 p){
 	return res*res;
 }
 
+float samp(vec2 p) {
+	return -1 + 2 * smoothstep(.49, .51, noise(p));
+}
+
 
 vec3 col(vec2 uv) {
   vec2 scaled_uv = uv*5;
-  vec2 pos = fract(scaled_uv);
-  vec2 cell = floor(scaled_uv);
+  vec2 pos = vec2(-1) + 2 * fract(scaled_uv);
+  vec2 cell = 2 * floor(scaled_uv);
 
-
-  const vec2 spoints[6] = vec2[6](
-      vec2(0,0),
-      vec2(0.5,0),
-      vec2(1,0),
-      vec2(1,.5),
-      vec2(1,1),
-      vec2(.5,.5)
+	
+	
+  const vec2 spoints[9] = vec2[9](
+	vec2( 0, 1),  // r
+	vec2( 0,-1),  // l 
+	vec2( 1, 0),  // t
+	vec2(-1, 0),  // b
+	
+	vec2( 1, 1),  // tr
+	vec2(-1,-1),  // bl
+	vec2( 1,-1),  // tl
+	vec2(-1, 1),  // br
+	
+	vec2( 0, 0)   // center
       );
+
+	
+  float x[9] = float[9](
+	samp(cell+spoints[0]),
+	samp(cell+spoints[1]),
+	samp(cell+spoints[2]),
+	samp(cell+spoints[3]),
+	-1, -1, -1, -1, // corners
+	1 // TODO
+	);
 	
 
-  const float x[6] = float[6]( 1,-1, 1, 1, 1, -1);
 
   float total = 0;
   //float dist[6];
-  for (int i = 0; i < 6; ++i) {
+  for (int i = 0; i < 9; ++i) {
     vec2 diff = (pos-spoints[i]);
     //float d = dot(diff, diff);
 	  
@@ -61,7 +80,7 @@ vec3 col(vec2 uv) {
   //vec3 x = vec3(1,1,0);
 
 
-  total=smoothstep(.5,.6,total);
+  //total=smoothstep(.5,.6,total);
   return vec3(total);
   //return vec3(fract(pos*5), 0);
 }
