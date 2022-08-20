@@ -50,7 +50,7 @@ float basis(vec2 v) {
 // sp: sample point
 float eval (vec2 uv, vec2 sp) {
     float weight = samp(sp);
-    //weight = 1.;
+    weight = 1.;
     vec2 diff = (uv-sp);
     //float d = dot(diff, diff);
     // diff: 0..sqrt(2)
@@ -59,32 +59,25 @@ float eval (vec2 uv, vec2 sp) {
 }
 float labyrinth(vec2 orig_uv) {
   float scale = 5.;
-  vec2 uv = orig_uv*scale;
 
-  /// pos: [-1, 1] x [-1, 1]
-  //vec2 pos = vec2(-1) + 2. * fract(uv);
-  // cell: even integersrgb
+  vec2 uv = orig_uv * scale;
   vec2 cell = floor(uv);
-  //float odd = .5;
-
-  float y_bot = cell.y;
-  float y_top = cell.y+1.;
-
-  float shift = .5 * mod(cell.y+1.5,2.);
-  float x_bot = cell.x + shift;
-  float x_top = cell.x - shift;
 
   float tot = 0.;
 
-  for(int i=-2;i<3;++i)
+  const int dy=1;
+  const int dx=1;
+
+  for(int oy=-dy; oy<=dy;++oy)
   {
-    tot+=eval(uv,vec2(x_top+float(i),y_top+2.));
-    tot+=eval(uv,vec2(x_top+float(i),y_top));
-    tot+=eval(uv,vec2(x_bot+float(i),y_bot));
-    tot+=eval(uv,vec2(x_bot+float(i),y_bot-2.));
+    for(int ox=-dx; ox<=dx;++ox)
+    {
+      float y = cell.y+float(oy);
+      float x = cell.x+float(ox)+.5*mod(y+.5,2.);
+      tot+=eval(uv,vec2(x,y));
+    }
   }
   //tot = 1./length(uv-cell);
-
 
 //tot=log(tot);
   tot*=.5;
