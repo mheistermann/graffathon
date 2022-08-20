@@ -93,14 +93,14 @@ float labyrinth(vec2 uv) {
 
 float line(float value)
 {
-  float thr1 = 0.05;
-  float thr2 = 0.02;
+  float thr1 = 0.07;
+  float thr2 = 0.00;
   return smoothstep(-thr1, -thr2, value) - smoothstep(thr2, thr1, value);
 }
 
 vec3 colorize(float value, vec3 col)
 {
-  return col*value;
+  return 1.0-(1.0-col)*value;
 }
 
 void main(void)
@@ -121,9 +121,13 @@ void main(void)
   float line_value_g = line(wall_value + amplitude_g*noise(st*70.0+vec2(-23.5+u_time*1.7, 1.3-u_time*0.3)));
   float line_value_b = line(wall_value + amplitude_b*noise(st*100.0+vec2(11.3+u_time*2.3, 27.5)));
 
-  vec3 rgb = colorize(line_value_r, vec3(1, 0, 0)) +
-    colorize(line_value_g, vec3(0, 1, 0)) +
-    colorize(line_value_b, vec3(0, 0, 1));
+  vec3 rgb = min(
+    colorize(line_value_r, vec3(0.8588, 0.4902, 0.5569)),
+    min(
+      colorize(line_value_g, vec3(0.2941, 0.4314, 0.0588)),
+      colorize(line_value_b, vec3(0.1451, 0.3922, 0.4196))
+    )
+  );
 
   gl_FragColor = vec4(rgb,1.0);
 }
