@@ -14,6 +14,8 @@ in vec2 out_texcoord;
 layout(location = 0) out vec4 out_color; // out_color must be written in order to see anything
 
 
+#define time fGlobalTime
+
 float rand(vec2 n) { 
 	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
 }
@@ -67,7 +69,7 @@ vec3 col(vec2 uv) {
 	samp(cell+spoints[2]),
 	samp(cell+spoints[3]),
 	-1, -1, -1, -1, // corners
-	1 // TODO
+	1 // center TODO
 	);
 	
 
@@ -78,14 +80,17 @@ vec3 col(vec2 uv) {
     vec2 diff = (pos-spoints[i]);
     //float d = dot(diff, diff);
 	  
-    float d = rbf(length(diff));
-    total += x[i] * d;
+    total += x[i] * rbf(length(diff));
   }
 
   //vec3 x = vec3(1,1,0);
 
 
-  //total=smoothstep(.5,.6,total);
+  //total=smoothstep(.4,.5,total);
+  //total *=.1;
+  float thr = 5+2*sin(2*time+3*uv.x+5*uv.y);
+  float eps = .01;
+  total=smoothstep(thr-eps,thr+eps, total);
   return vec3(total);
   //return vec3(fract(pos*5), 0);
 }
@@ -96,7 +101,7 @@ void main(void)
   uv -= 0.5;
   uv /= vec2(v2Resolution.y / v2Resolution.x, 1);
 
-	uv.x += 0.05 * fGlobalTime;
+uv.x += 0.05 * fGlobalTime;
 
   vec3 rgb = col(uv);
   out_color = vec4(rgb, 1);
