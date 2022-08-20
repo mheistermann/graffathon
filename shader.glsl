@@ -14,6 +14,22 @@ in vec2 out_texcoord;
 layout(location = 0) out vec4 out_color; // out_color must be written in order to see anything
 
 
+float rand(vec2 n) { 
+	return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
+}
+
+float noise(vec2 p){
+	vec2 ip = floor(p);
+	vec2 u = fract(p);
+	u = u*u*(3.0-2.0*u);
+	
+	float res = mix(
+		mix(rand(ip),rand(ip+vec2(1.0,0.0)),u.x),
+		mix(rand(ip+vec2(0.0,1.0)),rand(ip+vec2(1.0,1.0)),u.x),u.y);
+	return res*res;
+}
+
+
 vec3 col(vec2 uv) {
   vec2 scaled_uv = uv*5;
   vec2 pos = fract(scaled_uv);
@@ -28,20 +44,25 @@ vec3 col(vec2 uv) {
       vec2(1,1),
       vec2(.5,.5)
       );
+	
+
   const float x[6] = float[6]( 1,-1, 1, 1, 1, -1);
 
   float total = 0;
   //float dist[6];
   for (int i = 0; i < 6; ++i) {
     vec2 diff = (pos-spoints[i]);
-    float d = dot(diff, diff);
+    //float d = dot(diff, diff);
+	  
+    float d = 1/length(diff);
     total += x[i] * d;
   }
 
   //vec3 x = vec3(1,1,0);
 
 
-  return vec3(.3*total);
+  total=smoothstep(.5,.6,total);
+  return vec3(total);
   //return vec3(fract(pos*5), 0);
 }
 
