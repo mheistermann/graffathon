@@ -11,13 +11,7 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-
-
-
 #define time u_time
-
-const float r2 = sqrt(2.);
-const float rr = .5*sqrt(2.);
 
 float rand(vec2 n) { 
   return fract(sin(dot(n, vec2(12.9898, 4.1414))) * 43758.5453);
@@ -76,14 +70,9 @@ vec3 labyrinth(vec2 orig_uv) {
   float scale = 4.;
 
   vec2 uv = orig_uv * scale;
-  //vec2 loc = mod(uv, vec2(1., rr));
   vec2 cell = floor(uv);
 
   vec3 tot = vec3(0.);
-
-  //weight=vec3(cell,0.);
-
-//  tot+=eval(uv,cell+vec2(-1.5,0),weight);
 
   vec3 w1=vec3(1,0,0);
   vec3 w2=vec3(0,1,0);
@@ -101,47 +90,9 @@ vec3 labyrinth(vec2 orig_uv) {
 
       tot+=sampeval(uv,cell+vec2( -.25+fx,.5+fy),w1); // vert
       tot+=sampeval(uv,cell+vec2( +.25+fx,.5+fy),w1); // center
-      //tot+=eval(uv,cell+vec2( -.75+fx,.5+fy),w2); 
     }
   }
-  /*
-  tot+=eval(uv,cell+vec2( -.25,.5),w3); // L / R
 
-  tot+=eval(uv,cell+vec2( 0,0),w2); // B
-  tot+=eval(uv,cell+vec2(  1,0),w2); // B + (1,0)
-  tot+=eval(uv,cell+vec2( 0.5, 1),w2); // T
-  tot+=eval(uv,cell+vec2( -0.5, 1),w2); // T - (1,0)
-
-  */
-
-  //tot+=eval(uv,cell+vec2(-1, 1),weight);
-
-  /*
-  tot+=eval(uv,cell+vec2(-1,-1),weight);
-  tot+=eval(uv,cell+vec2( 0,-1),weight);
-  tot+=eval(uv,cell+vec2( 1,-1),weight);
-  */
-
-/*
-  for(int oy=-dy; oy<=dy;++oy)
-  {
-    for(int ox=-dx; ox<=dx;++ox)
-    {
-      float y = cell.y+float(oy);
-      float x = cell.x+float(ox);
-      float a = mod(x, 2.);
-      float b = mod(y, 2.);
-      float c = mod(x+y+y, 2.);
-
-      vec3 weight = vec3(1,1,a);
-      //x += .5*mod(y,2.);
-      tot+=eval(uv,vec2(x,y), weight);
-    }
-  }
-  */
-  //tot = 1./length(uv-cell);
-
-//tot=log(tot);
   tot += .2*sin(u_time);
   return tot;
 }
