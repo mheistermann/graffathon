@@ -10,6 +10,7 @@ precision mediump float;
 uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
+uniform sampler2D u_texture_0;
 
 #define time u_time
 
@@ -118,6 +119,7 @@ vec3 colorize(float value, vec3 col)
 
 vec3 color(vec2 st)
 {
+  //return texture2D(u_texture_0, st).rgb;
   //st.x += 0.2 * u_time;
   //st.y += 0.1 * sin(u_time);
 
