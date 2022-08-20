@@ -33,7 +33,7 @@ float saw(float x) {
 
 float saw2(float x,float speed) {
     float thr=.5;
-    float eps=.5/speed;
+    float eps=.5*3/speed;
     return smoothstep(thr-eps,thr+eps,2*abs(mod(x, 1)-.5));
 }
 
@@ -56,7 +56,7 @@ float plop(vec2 uv, float off) {
     //return shift/5;
     float bright = (strip+1)/(n+1);
     bright = 1;
-    return bright * noise(uv+vec2(0, shift));
+    return bright * noise(.1*(uv+vec2(0, shift)));
     
 }
 
