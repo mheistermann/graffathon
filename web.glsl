@@ -41,54 +41,54 @@ float basis(vec2 v) {
   float x = length(v);
   //vec2 z = pow(abs(v), vec2(2));
   //x = z.x+z.y;
-  const float supp=1.;
+  const float supp=.8;
   return 1. - pow(smoothstep(-supp, supp, x),2.);
   //return smoothstep(.1, .5, 1/x*x);
   //return 1/(x*x);	
 }
 
-float labyrinth(vec2 uv) {
-  vec2 scaled_uv = uv*5.;
-  vec2 pos = vec2(-1) + 2. * fract(scaled_uv);
-  vec2 cell = 2. * floor(scaled_uv);
-
-
-
-  vec2 spoints[9];
-  spoints[0] = vec2( 0, -1);  // l    
-  spoints[1] = vec2( 0,  1);  // r    
-  spoints[2] = vec2( 1,  0);  // t
-  spoints[3] = vec2(-1,  0);  // b
-  spoints[4] = vec2( 1, 1);  // tr
-  spoints[5] = vec2(-1,-1);  // bl
-  spoints[6] = vec2( 1,-1);  // tl
-  spoints[7] = vec2(-1, 1);  // br
-  spoints[8] = vec2( 0, 0);  // center    
-
-
-  float x[9];
-  for (int i = 0; i < 4; ++i) {
-    x[i] = samp(cell+spoints[i]);
-  }
-  x[4] = -1.;
-  x[5] = -1.;
-  x[6] = -1.;
-  x[7] = -1.;
-  x[8] = 1.;
-
-
-
-  float total = 0.;
-  //float dist[6];
-  for (int i = 0; i < 9; ++i) {
-    vec2 diff = (pos-spoints[i]);
+// sp: sample point
+float eval (vec2 uv, vec2 sp) {
+    float weight = samp(sp);
+    //weight = 1.;
+    vec2 diff = (uv-sp);
     //float d = dot(diff, diff);
-
     // diff: 0..sqrt(2)
-    total += x[i] * basis(diff);
-  }
+    return weight * basis(diff);
 
-  return total;
+}
+float labyrinth(vec2 orig_uv) {
+  float scale = 5.;
+  vec2 uv = orig_uv*scale;
+
+  /// pos: [-1, 1] x [-1, 1]
+  //vec2 pos = vec2(-1) + 2. * fract(uv);
+  // cell: even integersrgb
+  vec2 cell = floor(uv);
+  //float odd = .5;
+
+  float y_bot = cell.y;
+  float y_top = cell.y+1.;
+
+  float shift = .5 * mod(cell.y+1.5,2.);
+  float x_bot = cell.x + shift;
+  float x_top = cell.x - shift;
+
+  float tot = 0.;
+
+  for(int i=-2;i<3;++i)
+  {
+    tot+=eval(uv,vec2(x_top+float(i),y_top+2.));
+    tot+=eval(uv,vec2(x_top+float(i),y_top));
+    tot+=eval(uv,vec2(x_bot+float(i),y_bot));
+    tot+=eval(uv,vec2(x_bot+float(i),y_bot-2.));
+  }
+  //tot = 1./length(uv-cell);
+
+
+//tot=log(tot);
+  tot*=.5;
+  return tot;
 }
 
 float line(float value, float shift) {
@@ -110,9 +110,10 @@ void main(void)
   st.x += 0.05 * u_time;
 
   float wall_value = labyrinth(st);
-  float line_value = line(wall_value, 0.0);
+  //float line_value = line(wall_value, 0.0);
 
-  vec3 rgb = colorize(line_value, vec3(1, 1, 1));
+  //vec3 rgb = colorize(line_value, vec3(1, 1, 1));
+  vec3 rgb = colorize(wall_value, vec3(1, 1, 1));
 
   gl_FragColor = vec4(rgb,1.0);
 }
