@@ -33,6 +33,11 @@ float samp(vec2 p) {
 	return -1 + 2 * smoothstep(.49, .51, noise(p));
 }
 
+float rbf(float x) {
+	//return smoothstep(.1, .5, 1/x*x);
+	return 1/(x*x);	
+}
+
 
 vec3 col(vec2 uv) {
   vec2 scaled_uv = uv*5;
@@ -73,7 +78,7 @@ vec3 col(vec2 uv) {
     vec2 diff = (pos-spoints[i]);
     //float d = dot(diff, diff);
 	  
-    float d = 1/length(diff);
+    float d = rbf(length(diff));
     total += x[i] * d;
   }
 
@@ -91,6 +96,7 @@ void main(void)
   uv -= 0.5;
   uv /= vec2(v2Resolution.y / v2Resolution.x, 1);
 
+	uv.x += 0.05 * fGlobalTime;
 
   vec3 rgb = col(uv);
   out_color = vec4(rgb, 1);
