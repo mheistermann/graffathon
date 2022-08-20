@@ -41,42 +41,82 @@ float basis(vec2 v) {
   float x = length(v);
   //vec2 z = pow(abs(v), vec2(2));
   //x = z.x+z.y;
-  const float supp=.8;
+  const float supp=.3;
   return 1. - pow(smoothstep(-supp, supp, x),2.);
   //return smoothstep(.1, .5, 1/x*x);
   //return 1/(x*x);	
 }
 
 // sp: sample point
-float eval (vec2 uv, vec2 sp) {
-    float weight = samp(sp);
-    weight = 1.;
+vec3 eval (vec2 uv, vec2 sp, vec3 weight) {
+    //float weight = samp(sp);
+    //weight = 1.;
     vec2 diff = (uv-sp);
     //float d = dot(diff, diff);
     // diff: 0..sqrt(2)
     return weight * basis(diff);
-
 }
-float labyrinth(vec2 orig_uv) {
+
+
+
+
+vec3 labyrinth(vec2 orig_uv) {
   float scale = 5.;
 
   vec2 uv = orig_uv * scale;
   vec2 cell = floor(uv);
 
-  float tot = 0.;
+  vec3 tot = vec3(0.);
 
-  const int dy=1;
-  const int dx=1;
+  cell.x += .5*mod(cell.y, 2.);
+  const int dy=2;
+  const int dx=2;
+  vec3 weight=vec3(0,1,0);
+  //weight=vec3(cell,0.);
 
+//  tot+=eval(uv,cell+vec2(-1.5,0),weight);
+
+  
+  vec3 w2=vec3(1,0,0);
+  vec3 w3=vec3(0,0,1);
+  tot+=eval(uv,cell+vec2( -.5,0),weight); // BL
+  tot+=eval(uv,cell+vec2(  .5,0),weight); // BR
+  tot+=eval(uv,cell+vec2( 0, 1),weight); // TL
+  tot+=eval(uv,cell+vec2( 1, 1),weight); // TR
+  //tot+=eval(uv,cell+vec2( 1.5,0),weight);
+
+  tot+=eval(uv,cell+vec2( -.25,.5),w3); // L / R
+
+  tot+=eval(uv,cell+vec2( 0,0),w2); // B
+  tot+=eval(uv,cell+vec2(  1,0),w2); // B + (1,0)
+  tot+=eval(uv,cell+vec2( 0.5, 1),w2); // T
+  tot+=eval(uv,cell+vec2( -0.5, 1),w2); // T - (1,0)
+
+  //tot+=eval(uv,cell+vec2(-1, 1),weight);
+
+  /*
+  tot+=eval(uv,cell+vec2(-1,-1),weight);
+  tot+=eval(uv,cell+vec2( 0,-1),weight);
+  tot+=eval(uv,cell+vec2( 1,-1),weight);
+  */
+
+/*
   for(int oy=-dy; oy<=dy;++oy)
   {
     for(int ox=-dx; ox<=dx;++ox)
     {
       float y = cell.y+float(oy);
-      float x = cell.x+float(ox)+.5*mod(y+.5,2.);
-      tot+=eval(uv,vec2(x,y));
+      float x = cell.x+float(ox);
+      float a = mod(x, 2.);
+      float b = mod(y, 2.);
+      float c = mod(x+y+y, 2.);
+
+      vec3 weight = vec3(1,1,a);
+      //x += .5*mod(y,2.);
+      tot+=eval(uv,vec2(x,y), weight);
     }
   }
+  */
   //tot = 1./length(uv-cell);
 
 //tot=log(tot);
@@ -100,13 +140,14 @@ void main(void)
   st.x *= u_resolution.x/u_resolution.y;
 
 
-  st.x += 0.05 * u_time;
+  //st.x += 0.05 * u_time;
 
-  float wall_value = labyrinth(st);
+  vec3 rgb =  labyrinth(st);
+  //float wall_value = labyrinth(st);
   //float line_value = line(wall_value, 0.0);
 
   //vec3 rgb = colorize(line_value, vec3(1, 1, 1));
-  vec3 rgb = colorize(wall_value, vec3(1, 1, 1));
+  //vec3 rgb = colorize(wall_value, vec3(1, 1, 1));
 
   gl_FragColor = vec4(rgb,1.0);
 }
