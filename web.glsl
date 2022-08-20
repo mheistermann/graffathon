@@ -71,10 +71,11 @@ vec3 col(vec2 uv) {
   for (int i = 0; i < 4; ++i) {
     x[i] = samp(cell+spoints[i]);
   }
+  x[4] = -1.;
   x[5] = -1.;
   x[6] = -1.;
   x[7] = -1.;
-  x[8] = -1.;
+  x[8] = 1.;
 
 
 
@@ -93,9 +94,9 @@ vec3 col(vec2 uv) {
 
   //total=smoothstep(.4,.5,total);
   //total *=.1;
-  float thr = .3+.4*sin(2.*time+3.*uv.x+5.*uv.y);
+  float thr = 0.116+.4*sin(2.*time+3.*uv.x+5.*uv.y);
   float eps = .01;
-  total=smoothstep(thr-eps,thr+eps, total);
+  //total=smoothstep(thr-eps,thr+eps, total);
   return vec3(total);
   //return vec3(fract(pos*5), 0);
 }
@@ -112,4 +113,5 @@ void main(void)
 
   gl_FragColor = vec4(rgb,1.0);
 }
+
 
