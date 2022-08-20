@@ -47,8 +47,7 @@ float basis(vec2 v) {
   //return 1/(x*x);	
 }
 
-
-vec3 col(vec2 uv) {
+float labyrinth(vec2 uv) {
   vec2 scaled_uv = uv*5.;
   vec2 pos = vec2(-1) + 2. * fract(scaled_uv);
   vec2 cell = 2. * floor(scaled_uv);
@@ -89,16 +88,17 @@ vec3 col(vec2 uv) {
     total += x[i] * basis(diff);
   }
 
-  //vec3 x = vec3(1,1,0);
+  return total;
+}
 
+float line(float value, float shift) {
+  if (value <-0.1 || value > 0.1) return 0.0;
+  return 1.0;
+}
 
-  //total=smoothstep(.4,.5,total);
-  //total *=.1;
-  float thr = 0.116+.4*sin(2.*time+3.*uv.x+5.*uv.y);
-  float eps = .01;
-  //total=smoothstep(thr-eps,thr+eps, total);
-  return vec3(total);
-  //return vec3(fract(pos*5), 0);
+vec3 colorize(float value, vec3 col)
+{
+  return col*value;
 }
 
 void main(void)
@@ -109,7 +109,10 @@ void main(void)
 
   st.x += 0.05 * u_time;
 
-  vec3 rgb = col(st);
+  float wall_value = labyrinth(st);
+  float line_value = line(wall_value, 0.0);
+
+  vec3 rgb = colorize(line_value, vec3(1, 1, 1));
 
   gl_FragColor = vec4(rgb,1.0);
 }
