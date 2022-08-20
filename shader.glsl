@@ -35,9 +35,16 @@ float samp(vec2 p) {
 	return -1 + 2 * smoothstep(.49, .51, noise(p));
 }
 
-float rbf(float x) {
+// v in [-1,1] x [-1,1]
+float basis(vec2 v) {
+	
+	float x = length(v);
+	//vec2 z = pow(abs(v), vec2(2));
+	//x = z.x+z.y;
+	const float supp=1;
+	return 1 - pow(smoothstep(-supp, supp, x),2);
 	//return smoothstep(.1, .5, 1/x*x);
-	return 1/(x*x);	
+	//return 1/(x*x);	
 }
 
 
@@ -80,7 +87,8 @@ vec3 col(vec2 uv) {
     vec2 diff = (pos-spoints[i]);
     //float d = dot(diff, diff);
 	  
-    total += x[i] * rbf(length(diff));
+     // diff: 0..sqrt(2)
+    total += x[i] * basis(diff);
   }
 
   //vec3 x = vec3(1,1,0);
@@ -88,7 +96,7 @@ vec3 col(vec2 uv) {
 
   //total=smoothstep(.4,.5,total);
   //total *=.1;
-  float thr = 5+2*sin(2*time+3*uv.x+5*uv.y);
+  float thr = .5+.4*sin(2*time+3*uv.x+5*uv.y);
   float eps = .01;
   total=smoothstep(thr-eps,thr+eps, total);
   return vec3(total);
