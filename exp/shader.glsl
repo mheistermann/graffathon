@@ -39,6 +39,7 @@ float saw2(float x,float speed) {
 
 float[7] intervals = float[7](7.,11.,13.,17,19,23,29);
 
+// todo: instead of sampling noise, return uv coords
 float plop(vec2 uv, float off) {
     
     //return saw2(uv.x);
@@ -54,9 +55,9 @@ float plop(vec2 uv, float off) {
     //mod(time, interval)
     //float shift = saw2((time)/interval);//+.00001*(time+off)); //aw2(4.*(uv.x+.4*time));
     //return shift/5;
-    float bright = (strip+1)/(n+1);
-    bright = 1;
-    return bright * noise(.1*(uv+vec2(0, shift)));
+    float bright = .2 + .4*(strip+1)/(n+1);
+    //bright = 1;
+    return bright * noise(.1*(uv+vec2(0, shift*2)));
     
 }
 
