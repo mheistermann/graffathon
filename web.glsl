@@ -29,9 +29,11 @@ float noise(vec2 p){
 }
 
 float samp(vec2 p) {
-  float thr = .4;
-  float eps = -.1;
-  return -1. + 2. * smoothstep(thr-eps, thr+eps, noise(p*100234.));
+  //float thr = .3+.08*sin(.3*time);
+  float thr = .3;
+  float eps=.002;
+  //return -1. + 2. * step(thr, noise(p));
+  return -1. + 2. * smoothstep(thr-eps, thr+eps, noise(p+vec2(0,-.1*sin(time))));
 }
 
 // v in [-1,1] x [-1,1]
@@ -67,7 +69,7 @@ vec2 shrow(vec2 sp){
 
 
 vec3 labyrinth(vec2 orig_uv) {
-  float scale = 3.;
+  float scale = 7.;
 
   vec2 uv = orig_uv * scale;
   vec2 cell = floor(uv);
