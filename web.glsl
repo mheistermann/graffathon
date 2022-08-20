@@ -91,9 +91,11 @@ float labyrinth(vec2 uv) {
   return total;
 }
 
-float line(float value, float shift) {
-  if (value <-0.1 || value > 0.1) return 0.0;
-  return 1.0;
+float line(float value)
+{
+  float thr1 = 0.05;
+  float thr2 = 0.02;
+  return smoothstep(-thr1, -thr2, value) - smoothstep(thr2, thr1, value);
 }
 
 vec3 colorize(float value, vec3 col)
@@ -109,10 +111,19 @@ void main(void)
 
   st.x += 0.05 * u_time;
 
-  float wall_value = labyrinth(st);
-  float line_value = line(wall_value, 0.0);
+  st += 0.1*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
 
-  vec3 rgb = colorize(line_value, vec3(1, 1, 1));
+  float wall_value = labyrinth(st);
+  float amplitude_r = 0.15+0.05*noise(vec2(-st.y*1.25+8.7, st.x*1.75-0.7));
+  float amplitude_g = 0.2+0.05*noise(vec2(st.y*8.25+1.7*st.y, st.x*0.75-1.7*st.y));
+  float amplitude_b = 0.25+0.05*noise(vec2(-st.x*2.76+1.75, st.x*1.75-0.7));
+  float line_value_r = line(wall_value + amplitude_r*noise(st*50.0+vec2(11.3, 27.5+u_time*0.3)));
+  float line_value_g = line(wall_value + amplitude_g*noise(st*70.0+vec2(-23.5+u_time*1.7, 1.3-u_time*0.3)));
+  float line_value_b = line(wall_value + amplitude_b*noise(st*100.0+vec2(11.3+u_time*2.3, 27.5)));
+
+  vec3 rgb = colorize(line_value_r, vec3(1, 0, 0)) +
+    colorize(line_value_g, vec3(0, 1, 0)) +
+    colorize(line_value_b, vec3(0, 0, 1));
 
   gl_FragColor = vec4(rgb,1.0);
 }
