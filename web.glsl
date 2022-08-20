@@ -11,9 +11,6 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-
-
-
 #define time u_time
 
 float rand(vec2 n) { 
@@ -32,7 +29,9 @@ float noise(vec2 p){
 }
 
 float samp(vec2 p) {
-  return -1. + 2. * smoothstep(.49, .51, noise(p));
+  float thr = .4;
+  float eps = -.1;
+  return -1. + 2. * smoothstep(thr-eps, thr+eps, noise(p*100234.));
 }
 
 // v in [-1,1] x [-1,1]
@@ -41,55 +40,63 @@ float basis(vec2 v) {
   float x = length(v);
   //vec2 z = pow(abs(v), vec2(2));
   //x = z.x+z.y;
-  const float supp=1.;
+  const float supp=.7;
   return 1. - pow(smoothstep(-supp, supp, x),2.);
   //return smoothstep(.1, .5, 1/x*x);
   //return 1/(x*x);	
 }
 
-float labyrinth(vec2 uv) {
-  vec2 scaled_uv = uv*5.;
-  vec2 pos = vec2(-1) + 2. * fract(scaled_uv);
-  vec2 cell = 2. * floor(scaled_uv);
-
-
-
-  vec2 spoints[9];
-  spoints[0] = vec2( 0, -1);  // l    
-  spoints[1] = vec2( 0,  1);  // r    
-  spoints[2] = vec2( 1,  0);  // t
-  spoints[3] = vec2(-1,  0);  // b
-  spoints[4] = vec2( 1, 1);  // tr
-  spoints[5] = vec2(-1,-1);  // bl
-  spoints[6] = vec2( 1,-1);  // tl
-  spoints[7] = vec2(-1, 1);  // br
-  spoints[8] = vec2( 0, 0);  // center    
-
-
-  float x[9];
-  for (int i = 0; i < 4; ++i) {
-    x[i] = samp(cell+spoints[i]);
-  }
-  x[4] = -1.;
-  x[5] = -1.;
-  x[6] = -1.;
-  x[7] = -1.;
-  x[8] = 1.;
-
-
-
-  float total = 0.;
-  //float dist[6];
-  for (int i = 0; i < 9; ++i) {
-    vec2 diff = (pos-spoints[i]);
+vec3 eval (vec2 uv, vec2 sp, vec3 weight) {
+    //float weight = samp(sp);
+    //weight = 1.;
+    vec2 diff = (uv-sp);
     //float d = dot(diff, diff);
-
     // diff: 0..sqrt(2)
-    total += x[i] * basis(diff);
+    return weight * basis(diff);
+}
+vec3 sampeval (vec2 uv, vec2 sp, vec3 weight) {
+  return samp(sp) * eval(uv, sp, weight);
+}
+// sp: sample point
+
+vec2 shrow(vec2 sp){
+    sp.x+=.5*mod(sp.y,2.);
+    return sp;
+}
+
+
+
+vec3 labyrinth(vec2 orig_uv) {
+  float scale = 3.;
+
+  vec2 uv = orig_uv * scale;
+  vec2 cell = floor(uv);
+
+  vec3 tot = vec3(0.);
+
+  vec3 w1=vec3(1,0,0);
+  vec3 w2=vec3(0,1,0);
+  vec3 w3=vec3(0,0,1);
+  
+  const int dd = 2;
+  const int dx=dd;
+  const int dy=dd;
+  for (int x=-dx;x<=dx;++x) {
+    for(int y=-dy;y<=dy;++y){
+      float fx=float(x);
+      float fy=float(y);
+      tot-=eval(uv,shrow(cell+vec2(fx,fy)),w1); // wall corners
+      tot+=sampeval(uv,shrow(cell+vec2(-.5+fx,fy)),w1);// horiz
+
+      tot+=sampeval(uv,cell+vec2( -.25+fx,.5+fy),w1); // vert
+      tot+=sampeval(uv,cell+vec2( +.25+fx,.5+fy),w1); // center
+    }
   }
 
-  return total;
+  tot += .2*sin(u_time);
+  return tot;
 }
+
 
 float line(float value)
 {
@@ -97,6 +104,7 @@ float line(float value)
   float thr2 = 0.00;
   return smoothstep(-thr1, -thr2, value) - smoothstep(thr2, thr1, value);
 }
+
 
 vec3 colorize(float value, vec3 col)
 {
@@ -113,7 +121,7 @@ void main(void)
 
   st += 0.1*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
 
-  float wall_value = labyrinth(st);
+  float wall_value = labyrinth(st).r;
   float amplitude_r = 0.15+0.05*noise(vec2(-st.y*1.25+8.7, st.x*1.75-0.7));
   float amplitude_g = 0.2+0.05*noise(vec2(st.y*8.25+1.7*st.y, st.x*0.75-1.7*st.y));
   float amplitude_b = 0.25+0.05*noise(vec2(-st.x*2.76+1.75, st.x*1.75-0.7));
@@ -131,5 +139,6 @@ void main(void)
 
   gl_FragColor = vec4(rgb,1.0);
 }
+
 
 
