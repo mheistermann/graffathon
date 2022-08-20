@@ -118,10 +118,13 @@ vec3 colorize(float value, vec3 col)
 
 vec3 color(vec2 st)
 {
-  st.x += 0.05 * u_time;
+  st.x += 0.2 * u_time;
+  st.y += 0.1 * sin(u_time);
 
   st += 0.06*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
-
+  float scale = 6.+3.*sin(.3*time);
+  scale/=5.;
+  st*=scale;
   vec3 lab = labyrinth(st);
   //return  (lab +vec3(1))/2.;
   float wall_value = lab.r;
