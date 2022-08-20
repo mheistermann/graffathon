@@ -81,15 +81,15 @@ vec3 labyrinth(vec2 orig_uv) {
   vec3 w2=vec3(0,1,0);
   vec3 w3=vec3(0,0,1);
   
-  const int dd = 2;
-  const int dx=dd;
-  const int dy=dd;
-  for (int x=-dx;x<=dx;++x) {
-    for(int y=-dy;y<=dy;++y){
+  const int minx = -1;
+  const int maxx = 2;
+  const int miny = -1;
+  const int maxy = 2;
+  for (int x=minx;x<=maxx;++x) {
+    for(int y=miny;y<=maxy;++y){
       float fx=float(x);
       float fy=float(y);
       tot-= .4 * eval(uv,shrow(cell+vec2(fx,fy)),w1); // wall corners
-      //tot+= sampeval(uv,shrow(cell+vec2(fx,fy)),w1); // wall corners
       tot+=sampeval(uv,shrow(cell+vec2(-.5+fx,fy)),w1);// horiz
 
       tot+=sampeval(uv,cell+vec2( -.25+fx,.5+fy),w1); // vert
@@ -118,8 +118,8 @@ vec3 colorize(float value, vec3 col)
 
 vec3 color(vec2 st)
 {
-  st.x += 0.2 * u_time;
-  st.y += 0.1 * sin(u_time);
+  //st.x += 0.2 * u_time;
+  //st.y += 0.1 * sin(u_time);
 
   st += 0.06*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
   float scale = 6.+3.*sin(.3*time);
