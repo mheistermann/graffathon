@@ -12,6 +12,8 @@ uniform vec2 u_mouse;
 uniform float u_time;
 uniform sampler2D u_texture_0;
 
+const float scale = 0.2;
+
 #define time u_time
 
 float rand(vec2 n) { 
@@ -152,12 +154,79 @@ vec3 color(vec2 st)
 return rgb;
 }
 
+float abs_min(float x, float y) {
+  return (abs(x) < abs(y))?x:y;
+}
 
+float scene_sdf(vec3 p)
+{
+  
+  // abs-min
+  return abs_min(labyrinth(p.xy*scale).x, abs_min(p.z, 3.0-p.z));
+}
 
 
 void main(void)
 {
-  vec2 st = gl_FragCoord.xy/u_resolution.xy;
+  const vec3 world_up = vec3(0.0, 0.0, 1.0);
+
+  vec3 camera_center = vec3(1.0, 2.0, 1.8);
+  vec3 camera_dir = vec3(sin(u_time), cos(u_time), 0.0);
+  vec3 camera_right = normalize(cross(world_up, camera_dir));
+  vec3 camera_up = cross(camera_right, camera_dir);
+
+  vec2 st = 2.0*gl_FragCoord.xy/u_resolution.xy-1.0;
+  st.y = -st.y;
   st.x *= u_resolution.x/u_resolution.y;
-  gl_FragColor = vec4(color(st),1.0);
+
+  vec3 sight = (camera_dir*0.8 + camera_up*st.y + camera_right*st.x);
+  
+  vec3 p = camera_center + 0.01*sight;
+
+  vec3 ray_dir = normalize(sight);
+  vec3 ray_right = normalize(cross(camera_up, ray_dir));
+  vec3 ray_up = cross(ray_right, ray_dir);  
+
+  vec3 n = vec3(0, 0, 0);
+  float f = scene_sdf(p);
+  float step_scale = 1.0;
+  vec3 light_position = vec3(4, 3, 2.9);
+  for(int i = 0; i < 100; ++i) {
+    float step = abs(f)*step_scale;
+    vec3 dir = ray_dir*step;
+    p += dir;
+    if (p.z < 0.0) {
+      //p = p+dir*p.z/dir.z;
+      p.z = 0.0;
+      n = vec3(0,0,1);
+      break;
+    }
+    if (p.z > 3.0) {
+      //p = p+dir*(3.0-p.z)/dir.z;
+      p.z = 3.0;
+      n = vec3(0,0,-1);
+      break;
+    }
+    float fnew = scene_sdf(p);
+    float v = fnew * f;
+    if (f >= 0.0 && fnew < 0.0) {
+      //step_scale = -0.5*step_scale;
+      vec3 preal = p+dir*fnew/(fnew-f);
+      //if (abs(step_scale) < 0.5) {
+        n = (fnew - f)*ray_dir + 
+            (scene_sdf(p+ray_right*step) - fnew)*ray_right;
+            (scene_sdf(p+ray_up*step) - fnew)*ray_up;
+        n = normalize(n);
+        p = preal;
+        break;
+      //}
+      // p = preal;
+      // f = scene_sdf(p);
+    }
+    f = fnew;
+  }
+  if (dot(n, p-camera_center) < 0.0) n = -n;
+  float c = dot(n, normalize(p-light_position));
+  gl_FragColor = vec4(c, c, c, 1);
+  //gl_FragColor = vec4(ray_dir, 1);
 }
