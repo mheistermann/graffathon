@@ -40,7 +40,7 @@ float saw2(float x,float speed) {
 float[7] intervals = float[7](7.,11.,13.,17,19,23,29);
 
 // todo: instead of sampling noise, return uv coords
-float plop(vec2 uv, float off) {
+vec2 shifty(vec2 uv, float off) {
     
     //return saw2(uv.x);
     float n = 7;
@@ -55,10 +55,30 @@ float plop(vec2 uv, float off) {
     //mod(time, interval)
     //float shift = saw2((time)/interval);//+.00001*(time+off)); //aw2(4.*(uv.x+.4*time));
     //return shift/5;
-    float bright = .2 + .4*(strip+1)/(n+1);
+    //float bright = .2 + .4*(strip+1)/(n+1);
     //bright = 1;
-    return bright * noise(.1*(uv+vec2(0, shift*2)));
+    return vec2(0, shift);
     
+}
+
+
+float gauss(float x) {
+    return exp(-pow(x,2));
+}
+
+float plop(vec2 uv, float off) {
+    vec2 shift = shifty(uv, off);
+    vec2 pos = uv + 5*shift;
+    
+    vec2 c = floor(pos) + vec2(.5);
+    
+    float v = noise(.03123*c);
+    
+    v *= gauss(1*length(pos-c));
+    
+    //v *= gauss(7*(pos.y-c.y));
+    
+    return v;
 }
 
 vec3 color(vec2 uv) {
@@ -73,8 +93,8 @@ vec3 color(vec2 uv) {
     
     //uv.x += sin(.51*time+.2*sin(2*time));
     col += vec3(0,1,0)*plop(uv,0);
-    col += vec3(1,0,0)*plop(rot(2*PI/3)*uv,44.723);
-    col += vec3(0,0,1)*plop(rot(4*PI/3)*uv,3.9);
+    //col += vec3(1,0,0)*plop(rot(2*PI/3)*uv,44.723);
+    //col += vec3(0,0,1)*plop(rot(4*PI/3)*uv,3.9);
     return col;
 
 }
