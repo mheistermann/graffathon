@@ -70,91 +70,60 @@ float gauss(float x) {
     return exp(-pow(x,2));
 }
 float rbf(float x) {
-    float v= smoothstep(0.2,1.0,exp(-pow(x,2)));
+    float v= smoothstep(0.3,1.2,exp(-pow(x,2)));
     v*=v;
     return v;
     //return 1./pow(x,2);
 }
 
 float plop(vec2 uv, float off) {
-    
     vec2 shift = shifty(uv, off);
     vec2 pos = uv + 5*shift;
     
-    float wall_thresh=.25;
-    //wall_thresh += .02*sin(time);
+    vec2 c = floor(pos) + vec2(.5);
+    
+    float v = noise(.3871*c);
+    float wall_thresh=.23+.02*sin(time);
     float eps=0.001;
+    v = smoothstep(wall_thresh-eps, wall_thresh+eps,v);
     
-    float sum = 0;
-    int dd = 3;
-    for (int i = -dd; i <= dd ; ++i) {
-        vec2 c = floor(pos) + vec2(.5,i);
-    
-        float v = noise(vec2(1,.771)*c);
-        v = smoothstep(wall_thresh-eps, wall_thresh+eps,v);
-        
-        vec2 diff = pos - c;
-        diff.y/=dd*1;
-
-        v   *= rbf(1.8*length(diff));
+    v *= rbf(1.6*length(pos-c));
     
     //v *= gauss(7*(pos.y-c.y));
-        sum += v;
-    }
-    return sum;
+    
+    return v;
 }
 float plop2(vec2 uv, float off) {
-    float v = 0; // plop(uv, off);
-    v+= plop(uv+vec2(0,0), off);
-    //v+= plop(uv, off, vec2(.5,0));
-    //v+= plop(uv+vec2(0.3,.2), off);
-    
-    //v+= plop(uv+vec2(.5,0.3), off);
-    //v+= plop(uv+vec2(.5,0.8), off);
-
-    //v+= plop(uv+vec2(0.4,0.4), off);
-    //v+= plop(uv+vec2(0.8,0.7), off);
-    
-    //v+= plop(uv+vec2(0.2,0.7), off);
-    //v+= plop(uv+vec2(0.2,0.2), off);
-    //v+= plop(uv+vec2(0.5,0.7), off);
-    //v+= plop(uv+vec2(0.8,0.2), off);
-    return v/2;
+    float v = plop(uv, off);
+    v+= plop(uv+vec2(0,0.5), off);
+    v+= plop(uv+vec2(0.2,0.1), off);
+    v+= plop(uv+vec2(0.5,0.2), off);
+    v+= plop(uv+vec2(0.8,0.2), off);
+    return v/5;
 }
 
-float labyrinth(vec2 uv) {
+float lab(vec2 uv) {
     //rot(pi/3)*uv;
     //float n = noise(rot(.01*time) * uv);
     //return vec3(plop(rot(PI/3)*uv));
-
-    uv*=10;
+    float col;
+    uv*=9;
     
-    //uv *= 1+.1*sin(.3*time);
+    uv *= 1+.1*sin(.3*time);
     //uv.x += 4*sin(.4*time);
     
-    //uv.x += 5*sin(.51*time+.2*sin(2*time));
+    uv.x += 5*sin(.51*time+.2*sin(2*time));
     
-    //uv.y += 5*sin(9+.61*time+.2*sin(1*time));
-    float v;
-    v += plop2(uv,0);
-    v += plop2(rot(2*PI/3)*uv,44.723);
-    v += plop2(rot(4*PI/3)*uv,3.9);
-
-    return v;
-}
+    uv.y += 5*sin(9+.61*time+.2*sin(1*time));
     
-vec3 color(vec2 uv) {
-    float v = labyrinth(uv);
-    float thr = .02;
-    float eps = .01;
-    
-    
-    //v = smoothstep(thr-eps, thr+eps,abs(v-.5));
-    //v = smoothstep(thr-eps, thr+eps,v);
-    //v = smoothstep(0., eps,abs(v-.1));
-    
-  
-    return vec3(v);
+    col += plop2(uv,0);
+    //col += vec3(0,1,0)*plop(uv+vec2(0,.5),0);
+    col += plop2(rot(2*PI/3)*uv,44.723);
+    col += plop2(rot(4*PI/3)*uv,3.9);
+    float thr = .01;
+    float eps = .1;
+    col = smoothstep(0., .7, col);
+    return col;
 
 }
 
@@ -165,5 +134,8 @@ void main(void)
 	uv /= vec2(v2Resolution.y / v2Resolution.x, 1);
 
     
-	out_color = vec4(color(uv), 0.);
+    float l = lab(uv);
+    
+    vec3 rgb=vec3(l);
+	out_color = vec4(rgb, 0.);
 }
