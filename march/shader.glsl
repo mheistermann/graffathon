@@ -94,7 +94,7 @@ float sdf(vec3 p) {
     vec3 center = vec3(0,0,0);
     
     float d = sphere(p-center,.5);
-    for (int i = 0; i < 10; ++i) {
+    for (int i = 0; i < 8; ++i) {
        
         //vec3 off = vec3(1,1,0);
         vec3 off = normalize(noise3(vec2(10*i*.347, 0))
@@ -102,8 +102,8 @@ float sdf(vec3 p) {
         //off=vec3(0);
         float phase=.3*i;
         vec3 sorig = center + 2.*sin(time+phase)*off;
-        float s = sphere(p-sorig, .3);
-        d = opSmoothUnion(d,s, .5);
+        float s = sphere(p-sorig, .6+.2*sin(i+.2*time));
+        d = opSmoothUnion(d,s, 0.9);
     }
     
     
@@ -123,21 +123,34 @@ vec3 color(vec2 uv)
 {
     
     vec3 color;
-    vec3 dir = normalize(vec3(uv,1));
+    
+    vec3 target = vec3(0,0,0);
+    
+    float camdist=6 + 2*sin(time*.3);
+    vec3 cam =  vec3(camdist*sin(time), 3,camdist*cos(time));
+    vec3 forward = normalize(target-cam);
+    vec3 up = vec3(0,1,0);
+    vec3 right = normalize(cross(forward, up));
     
     
-    vec3 orig =  vec3(0,0,-5);
+    float focal = 1;
+    vec3 dir = forward * focal + right*uv.x + up*uv.y;
+    //vec3 dir = normalize(vec3(uv,1));
+    dir=normalize(dir);
     
-    vec3 pos = orig;
+    vec3 lpos = vec3(10*rot(time)*vec2(1,0),0);
+    lpos = vec3(5,5,0);
+    
+    vec3 pos = cam;
     int i = 0;
     bool hit = false;
     for (; i < 100; ++i) {
         float d = sdf(pos);
-        if (d < 1e-5) {
+        if (d < 1e-2) {
             hit = true;
             break; 
         }
-        if (d > 5) {
+        if (d > 50) {
             break;
         }
         pos += d * dir;
@@ -145,10 +158,15 @@ vec3 color(vec2 uv)
     vec3 n = normal(pos);
     
     if (hit) {
-        vec3 lpos = vec3(10*rot(time)*vec2(1,0),0);
         vec3 ldir = normalize(lpos-pos);
-        float br = dot(n, ldir);
-
+        float diff = dot(n, ldir);
+        
+        float spec = 0;
+        float br = 0.02;
+        
+        if (diff > 0) br += diff;
+        if (diff > 0) br += spec;
+        
         color += vec3(br);
     } else {
         float halo = float(i)/50;
