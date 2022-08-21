@@ -103,7 +103,7 @@ float sdf(vec3 p) {
         float phase=.3*i;
         vec3 sorig = center + 2.*sin(time+phase)*axis;
         float s = sphere(p-sorig, .6+.2*sin(i+.2*time));
-        d = opSmoothUnion(d,s, 1.7);
+        d = opSmoothUnion(d,s, 1+sin(time));
     }
     
     
@@ -126,7 +126,7 @@ vec3 color(vec2 uv)
     
     vec3 target = vec3(0,0,0);
     
-    float camdist=10 + 2*sin(time*.3);
+    float camdist=10 + 3*sin(time*.3);
     vec3 cam =  vec3(camdist*sin(time), 3,camdist*cos(time));
     vec3 forward = normalize(target-cam);
     vec3 up = vec3(0,1,0);
