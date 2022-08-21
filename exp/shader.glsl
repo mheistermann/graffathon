@@ -61,9 +61,19 @@ vec2 shifty(vec2 uv, float off) {
     
 }
 
+float sqlen(vec2 v) {
+    return dot(v,v);
+}
+
 
 float gauss(float x) {
     return exp(-pow(x,2));
+}
+float rbf(float x) {
+    float v= smoothstep(0.3,1.2,exp(-pow(x,2)));
+    v*=v;
+    return v;
+    //return 1./pow(x,2);
 }
 
 float plop(vec2 uv, float off) {
@@ -72,13 +82,24 @@ float plop(vec2 uv, float off) {
     
     vec2 c = floor(pos) + vec2(.5);
     
-    float v = noise(.03123*c);
+    float v = noise(.3871*c);
+    float wall_thresh=.23+.02*sin(time);
+    float eps=0.001;
+    v = smoothstep(wall_thresh-eps, wall_thresh+eps,v);
     
-    v *= gauss(1*length(pos-c));
+    v *= rbf(1.6*length(pos-c));
     
     //v *= gauss(7*(pos.y-c.y));
     
     return v;
+}
+float plop2(vec2 uv, float off) {
+    float v = plop(uv, off);
+    v+= plop(uv+vec2(0,0.5), off);
+    v+= plop(uv+vec2(0.2,0.1), off);
+    v+= plop(uv+vec2(0.5,0.2), off);
+    v+= plop(uv+vec2(0.8,0.2), off);
+    return v/5;
 }
 
 vec3 color(vec2 uv) {
@@ -88,13 +109,20 @@ vec3 color(vec2 uv) {
     vec3 col;
     uv*=9;
     
-    //uv *= 6+sin(time);
-    //uv.x += sin(.4*time);
+    uv *= 1+.1*sin(.3*time);
+    //uv.x += 4*sin(.4*time);
     
-    //uv.x += sin(.51*time+.2*sin(2*time));
-    col += vec3(0,1,0)*plop(uv,0);
-    //col += vec3(1,0,0)*plop(rot(2*PI/3)*uv,44.723);
-    //col += vec3(0,0,1)*plop(rot(4*PI/3)*uv,3.9);
+    uv.x += 5*sin(.51*time+.2*sin(2*time));
+    
+    uv.y += 5*sin(9+.61*time+.2*sin(1*time));
+    
+    col += vec3(0,1,0)*plop2(uv,0);
+    //col += vec3(0,1,0)*plop(uv+vec2(0,.5),0);
+    col += vec3(0,1,0)*plop2(rot(2*PI/3)*uv,44.723);
+    col += vec3(0,1,0)*plop2(rot(4*PI/3)*uv,3.9);
+    float thr = .2;
+    float eps = .001;
+    col = vec3(smoothstep(thr-eps, thr+eps, col.g));
     return col;
 
 }
