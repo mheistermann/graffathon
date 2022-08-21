@@ -77,30 +77,41 @@ float rbf(float x) {
 }
 
 float plop(vec2 uv, float off) {
+    
     vec2 shift = shifty(uv, off);
     vec2 pos = uv + 5*shift;
     
-    vec2 c = floor(pos) + vec2(.5);
-    
-    float v = noise(vec2(1,.1771)*c);
     float wall_thresh=.25;
     //wall_thresh += .02*sin(time);
     float eps=0.001;
-    v = smoothstep(wall_thresh-eps, wall_thresh+eps,v);
     
-    v *= rbf(1.8*length(pos-c));
+    float sum = 0;
+    int dd = 3;
+    for (int i = -dd; i <= dd ; ++i) {
+        vec2 c = floor(pos) + vec2(.5,i);
+    
+        float v = noise(vec2(1,.771)*c);
+        v = smoothstep(wall_thresh-eps, wall_thresh+eps,v);
+        
+        vec2 diff = pos - c;
+        diff.y/=dd*1;
+
+        v   *= rbf(1.8*length(diff));
     
     //v *= gauss(7*(pos.y-c.y));
-    
-    return v;
+        sum += v;
+    }
+    return sum;
 }
 float plop2(vec2 uv, float off) {
     float v = 0; // plop(uv, off);
     v+= plop(uv+vec2(0,0), off);
-    v+= plop(uv+vec2(0,0.5), off);
+    //v+= plop(uv, off, vec2(.5,0));
+    //v+= plop(uv+vec2(0.3,.2), off);
     
-    v+= plop(uv+vec2(.5,0.3), off);
-    v+= plop(uv+vec2(.5,0.8), off);
+    //v+= plop(uv+vec2(.5,0.3), off);
+    //v+= plop(uv+vec2(.5,0.8), off);
+
     //v+= plop(uv+vec2(0.4,0.4), off);
     //v+= plop(uv+vec2(0.8,0.7), off);
     
@@ -108,7 +119,7 @@ float plop2(vec2 uv, float off) {
     //v+= plop(uv+vec2(0.2,0.2), off);
     //v+= plop(uv+vec2(0.5,0.7), off);
     //v+= plop(uv+vec2(0.8,0.2), off);
-    return v/3;
+    return v/2;
 }
 
 float labyrinth(vec2 uv) {
@@ -118,12 +129,12 @@ float labyrinth(vec2 uv) {
 
     uv*=10;
     
-    uv *= 1+.1*sin(.3*time);
+    //uv *= 1+.1*sin(.3*time);
     //uv.x += 4*sin(.4*time);
     
-    uv.x += 5*sin(.51*time+.2*sin(2*time));
+    //uv.x += 5*sin(.51*time+.2*sin(2*time));
     
-    uv.y += 5*sin(9+.61*time+.2*sin(1*time));
+    //uv.y += 5*sin(9+.61*time+.2*sin(1*time));
     float v;
     v += plop2(uv,0);
     v += plop2(rot(2*PI/3)*uv,44.723);
@@ -134,11 +145,11 @@ float labyrinth(vec2 uv) {
     
 vec3 color(vec2 uv) {
     float v = labyrinth(uv);
-    float thr = .12;
-    float eps = .02;
+    float thr = .02;
+    float eps = .01;
     
     
-    v = smoothstep(thr-eps, thr+eps,abs(v-.1));
+    //v = smoothstep(thr-eps, thr+eps,abs(v-.5));
     //v = smoothstep(thr-eps, thr+eps,v);
     //v = smoothstep(0., eps,abs(v-.1));
     
