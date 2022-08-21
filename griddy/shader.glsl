@@ -23,6 +23,20 @@ float noise(vec2 uv) {
     return texture2D(texNoise, uv).r;
 }
 
+float sqlen(vec2 v) {
+    return dot(v,v);
+}
+
+vec3 tex(vec2 uv) {
+    float center_dist = sqlen(fract(uv)-vec2(.5));
+    float amt =  exp(1.8*-center_dist);
+    amt = sin(30*amt);
+    vec2 cell = floor(uv);
+    vec3 tmp=vec3(cell.x);
+    vec3 col = mod(cell.xyx,vec3(3,4,5));
+    return amt * col;
+}
+
 mat2 rot(float a) {
     return mat2(cos(a),-sin(a),sin(a),cos(a));
 }
@@ -37,19 +51,13 @@ float saw2(float x,float speed) {
     return smoothstep(thr-eps,thr+eps,2*abs(mod(x, 1)-.5));
 }
 
-float[7] intervals = float[7](7.,11.,13.,17,19,23,29);
-
 int grey(int x, int bitpos) {
     int g = x ^ (x>>1);
     return (g >> bitpos) & 1;
 }
 
 float shifty(vec2 uv, int sel) {
-    
-    //return saw2(uv.x);
     int n_strips = 8;
-    //float noi = noise(rot(.01*time) * uv);
-    //float saw = mod(uv.x, 1.);
     int cnt = int(uv.x+100);
     //float strip = mod(10*cnt,n);
     int strip = int(mod(cnt,n_strips));
@@ -69,7 +77,6 @@ float shifty(vec2 uv, int sel) {
     
 }
 
-
 float gauss(float x) {
     return exp(-pow(x,2));
 }
@@ -78,45 +85,35 @@ vec2 ccw(vec2 v) {
     return vec2(-v.y, v.x);
 }
 
-float plop(vec2 uv, float off) {
+vec3 plop(vec2 uv) 
+{
+    vec2 orig_uv = uv;
+    
+    float places = 5;
     float sy = shifty(uv, 0);
-    float sx = shifty(ccw(uv),1);
-    //sy=0;
-    //sx=0;
-    //shiftx=0;
-    //shift=shifty(ccw(shift), off);
-    float places = 4;
-    vec2 pos = uv + places*vec2(sx, sy);
+    uv.y += places * sy;
+    float sx = shifty(ccw(orig_uv),1);
+    uv.x += places * sx;
+    // uv + places*vec2(sx, sy);
     
-    vec2 c = floor(pos) + vec2(.5);
-    
-    float v = noise(.03123*c);
-    
-    v *= gauss(1*length(fract(abs(pos-c))));
-    
-    //v *= gauss(7*(pos.y-c.y));
-    
-    return v;
+    return tex(uv);
 }
 
-vec3 color(vec2 uv) {
-    //rot(pi/3)*uv;
-    //float n = noise(rot(.01*time) * uv);
-    //return vec3(plop(rot(PI/3)*uv));
-    vec3 col;
-    //uv*=9;
-    
+vec2 cam_uv(vec2 uv) {
     uv = rot(.2*time)*uv;
     uv *= 9+2*sin(time);
     uv.x += 8*sin(.4*time);
+    uv.y += 8*sin(.3*time+17);
+    return uv;
+}
+
+vec3 color(vec2 uv) {
+    vec3 col;
     
-    uv.y += 8*sin(.4*time);
+    uv = cam_uv(uv);
     
-    //uv.x += sin(.51*time+.2*sin(2*time));
-    col += vec3(0,1,0)*plop(uv,0);
-    //col += vec3(1,0,0)*plop(rot(2*PI/3)*uv,44.723);
-    //col += vec3(0,0,1)*plop(rot(4*PI/3)*uv,3.9);
-    return col;
+    return plop(uv);
+
 
 }
 
