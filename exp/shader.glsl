@@ -171,6 +171,8 @@ vec3 color(vec2 st)
   //st.x += 0.2 * u_time;
   //st.y += 0.1 * sin(u_time);
 
+  float ang = 0.7*time + cos(1.7*time);
+  st = rot(ang) * st;
   st += 0.06*vec2(noise(st*2.9+vec2(11.3, -15.7+u_time)), noise(st*1.7+vec2(8.3, -1.7-u_time*1.1)));
   float scale = 3.+1.*sin(.3*time);
   scale/=5.;
