@@ -39,25 +39,33 @@ float saw2(float x,float speed) {
 
 float[7] intervals = float[7](7.,11.,13.,17,19,23,29);
 
-// todo: instead of sampling noise, return uv coords
-vec2 shifty(vec2 uv, float off) {
+int grey(int x, int bitpos) {
+    int g = x ^ (x>>1);
+    return (g >> bitpos) & 1;
+}
+
+float shifty(vec2 uv, int sel) {
     
     //return saw2(uv.x);
-    float n = 7;
+    int n_strips = 8;
     //float noi = noise(rot(.01*time) * uv);
-    float saw = mod(uv.x, 1.);
-    float cnt = floor(uv.x);
-    float strip = mod(10*cnt,n);
-    //return strip/8;
-    float interval = intervals[int(strip)%9];
-    float shift= saw2(.79+(1*time)/interval,interval);
-    //return mod(interval/100,1);
-    //mod(time, interval)
-    //float shift = saw2((time)/interval);//+.00001*(time+off)); //aw2(4.*(uv.x+.4*time));
-    //return shift/5;
-    //float bright = .2 + .4*(strip+1)/(n+1);
-    //bright = 1;
-    return vec2(0, shift);
+    //float saw = mod(uv.x, 1.);
+    int cnt = int(uv.x+100);
+    //float strip = mod(10*cnt,n);
+    int strip = int(mod(cnt,n_strips));
+    
+    int tstep = int(time); 
+    int bitpos = 2*int(strip)+sel;
+    int last = grey(tstep, bitpos);
+    int cur = grey(tstep+1, bitpos);
+    
+
+    
+    float t01 = fract(time);
+    float t = smoothstep(0,1,t01);
+    float shift = mix(last,cur,t);
+    
+    return shift;
     
 }
 
@@ -66,15 +74,25 @@ float gauss(float x) {
     return exp(-pow(x,2));
 }
 
+vec2 ccw(vec2 v) {
+    return vec2(-v.y, v.x);
+}
+
 float plop(vec2 uv, float off) {
-    vec2 shift = shifty(uv, off);
-    vec2 pos = uv + 5*shift;
+    float sy = shifty(uv, 0);
+    float sx = shifty(ccw(uv),1);
+    //sy=0;
+    //sx=0;
+    //shiftx=0;
+    //shift=shifty(ccw(shift), off);
+    float places = 4;
+    vec2 pos = uv + places*vec2(sx, sy);
     
     vec2 c = floor(pos) + vec2(.5);
     
     float v = noise(.03123*c);
     
-    v *= gauss(1*length(pos-c));
+    v *= gauss(1*length(fract(abs(pos-c))));
     
     //v *= gauss(7*(pos.y-c.y));
     
@@ -86,10 +104,13 @@ vec3 color(vec2 uv) {
     //float n = noise(rot(.01*time) * uv);
     //return vec3(plop(rot(PI/3)*uv));
     vec3 col;
-    uv*=9;
+    //uv*=9;
     
-    //uv *= 6+sin(time);
-    //uv.x += sin(.4*time);
+    uv = rot(.2*time)*uv;
+    uv *= 9+2*sin(time);
+    uv.x += 8*sin(.4*time);
+    
+    uv.y += 8*sin(.4*time);
     
     //uv.x += sin(.51*time+.2*sin(2*time));
     col += vec3(0,1,0)*plop(uv,0);
